@@ -144,8 +144,10 @@ impl<Depth> Pipeline<Depth> {
         }
 
         let instance_buffer = device
-            .create_buffer_mapped(instances.len(), wgpu::BufferUsage::COPY_SRC)
-            .fill_from_slice(instances);
+            .create_buffer_mapped(instances.len() * std::mem::size_of::<Instance>(), 
+                                  wgpu::BufferUsage::COPY_SRC);
+        instance_buffer.data.copy_from_slice(bytemuck::cast_slice(&instances));
+        let instance_buffer = instance_buffer.finish();
 
         encoder.copy_buffer_to_buffer(
             &instance_buffer,
@@ -178,10 +180,11 @@ fn build<D>(
 ) -> Pipeline<D> {
     let transform = device
         .create_buffer_mapped(
-            16,
+            64,
             wgpu::BufferUsage::UNIFORM | wgpu::BufferUsage::COPY_DST,
-        )
-        .fill_from_slice(&IDENTITY_MATRIX);
+        );
+    transform.data.copy_from_slice(bytemuck::bytes_of(&IDENTITY_MATRIX));
+    let transform = transform.finish();
 
     let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
         address_mode_u: wgpu::AddressMode::ClampToEdge,
@@ -348,8 +351,9 @@ fn draw<D>(
 ) {
     if transform != pipeline.current_transform {
         let transform_buffer = device
-            .create_buffer_mapped(16, wgpu::BufferUsage::COPY_SRC)
-            .fill_from_slice(&transform[..]);
+            .create_buffer_mapped(64, wgpu::BufferUsage::COPY_SRC);
+        transform_buffer.data.copy_from_slice(bytemuck::cast_slice(&transform[..]));
+        let transform_buffer = transform_buffer.finish();
 
         encoder.copy_buffer_to_buffer(
             &transform_buffer,
@@ -432,6 +436,9 @@ pub struct Instance {
     tex_right_bottom: [f32; 2],
     color: [f32; 4],
 }
+
+unsafe impl bytemuck::Zeroable for Instance {}
+unsafe impl bytemuck::Pod for Instance {}
 
 impl Instance {
     const INITIAL_AMOUNT: usize = 50_000;

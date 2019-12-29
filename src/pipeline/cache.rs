@@ -33,8 +33,9 @@ impl Cache {
         data: &[u8],
     ) {
         let buffer = device
-            .create_buffer_mapped(data.len(), wgpu::BufferUsage::COPY_SRC)
-            .fill_from_slice(data);
+            .create_buffer_mapped(data.len(), wgpu::BufferUsage::COPY_SRC);
+        buffer.data.copy_from_slice(data);
+        let buffer = buffer.finish();
 
         encoder.copy_buffer_to_texture(
             wgpu::BufferCopyView {
