@@ -11,7 +11,7 @@ documentation = "https://docs.rs/wgpu_glyph"
 readme = "README.md"
 
 [dependencies]
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", rev = "4e77cb3aa5b32cf1bdf6bbdf003538e54a1f110d" }
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs", rev = "8f083e54c57f7411c60b53fc8366be254bace093" }
 glyph_brush = "0.6"
 log = "0.4"
 bytemuck = "1.1.0"
